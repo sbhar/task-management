@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "-O1ABC2def3GHIjklm4n5o6p": {
+      "title": "Complete Homework",
+      "description": "Finish math and science homework",
+      "status": "To Do"
+    },
+    "-O1ABC2def3GHIjklm4n5o6q": {
+      "title": "Buy Groceries",
+      "description": "Purchase vegetables, fruits, and bread",
+      "status": "In Progress"
+    },
+    "-O1ABC2def3GHIjklm4n5o6r": {
+      "title": "Read a Book",
+      "description": "Read 'The Great Gatsby' for book club",
+      "status": "Done"
+    }
+  }
+}

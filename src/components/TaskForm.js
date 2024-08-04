@@ -1,7 +1,8 @@
-// src/components/TaskForm.js
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Button, Form, FormGroup, Label, Input, Col, Row } from 'reactstrap';
+import { getAuth } from 'firebase/auth';
+import { getDatabase, ref, push, set } from 'firebase/database';
+import { auth, database } from '../firebase'; // Adjust the import path as needed
 
 const TaskForm = ({ onTaskAdded }) => {
   const [title, setTitle] = useState('');
@@ -11,13 +12,23 @@ const TaskForm = ({ onTaskAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/tasks', { title, description, status });
-      onTaskAdded(response.data);
-      setTitle('');
-      setDescription('');
-      setStatus('To Do');
+      const user = getAuth().currentUser;
+      if (user) {
+        const token = await user.getIdToken();
+        const db = getDatabase();
+        const tasksRef = ref(db, 'tasks');
+        const newTaskRef = push(tasksRef);
+        await set(newTaskRef, { title, description, status });
+
+        onTaskAdded({ id: newTaskRef.key, title, description, status });
+        setTitle('');
+        setDescription('');
+        setStatus('To Do');
+      } else {
+        console.error('No user is signed in.');
+      }
     } catch (error) {
-      console.error(error);
+      console.error('Error adding task:', error);
     }
   };
 

@@ -1,22 +1,29 @@
-// server.js or app.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const db = require('./firebaseAdmin'); // Adjust path as needed
+const { auth, db } = require('./firebaseAdmin');
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors()); // Enable CORS for all origins
+app.use(cors());
 
-// If you want to limit access to specific origins:
-const corsOptions = {
-  origin: 'http://localhost:3000', // Allow requests from this origin
+// Middleware to check Firebase Auth token
+const authenticate = async (req, res, next) => {
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (!token) {
+    return res.status(401).send('Unauthorized');
+  }
+  try {
+    const decodedToken = await auth.verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    res.status(401).send('Unauthorized');
+  }
 };
 
-app.use(cors(corsOptions));
-
-// Example route to get tasks
-app.get('/tasks', async (req, res) => {
+// Get all tasks
+app.get('/tasks', authenticate, async (req, res) => {
   try {
     const snapshot = await db.ref('tasks').once('value');
     const tasks = snapshot.val();
@@ -26,19 +33,27 @@ app.get('/tasks', async (req, res) => {
   }
 });
 
-// Example route to add a task
-app.post('/tasks', async (req, res) => {
+// Add a new task
+app.post('/tasks', authenticate, async (req, res) => {
   try {
+    const { title, description, status } = req.body;
+
+    // Generate a new unique key for the task
     const newTaskRef = db.ref('tasks').push();
-    await newTaskRef.set(req.body);
-    res.json({ id: newTaskRef.key, ...req.body });
+
+    // Set the task data at the new key
+    await newTaskRef.set({ title, description, status });
+
+    // Respond with the task data including the new unique key
+    res.status(200).json({ id: newTaskRef.key, title, description, status });
   } catch (error) {
-    res.status(500).send(error.message);
+    console.error('Error adding task:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// Example route to update a task
-app.put('/tasks/:id', async (req, res) => {
+// Update an existing task
+app.put('/tasks/:id', authenticate, async (req, res) => {
   try {
     await db.ref(`tasks/${req.params.id}`).update(req.body);
     res.sendStatus(200);
@@ -47,8 +62,8 @@ app.put('/tasks/:id', async (req, res) => {
   }
 });
 
-// Example route to delete a task
-app.delete('/tasks/:id', async (req, res) => {
+// Delete a task
+app.delete('/tasks/:id', authenticate, async (req, res) => {
   try {
     await db.ref(`tasks/${req.params.id}`).remove();
     res.sendStatus(200);
