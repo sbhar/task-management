@@ -1,19 +1,50 @@
 {
   "tasks": {
-    "-O1ABC2def3GHIjklm4n5o6p": {
-      "title": "Complete Homework",
-      "description": "Finish math and science homework",
-      "status": "To Do"
+    "-O3WHSTvWmYkpplh59Dv": {
+      "description": "Task1",
+      "status": "To Do",
+      "title": "T1"
     },
-    "-O1ABC2def3GHIjklm4n5o6q": {
-      "title": "Buy Groceries",
-      "description": "Purchase vegetables, fruits, and bread",
-      "status": "In Progress"
+    "-O3WNoPiBL_yjNGlTm49": {
+      "description": "Task2",
+      "status": "In Progress",
+      "title": "T2"
     },
-    "-O1ABC2def3GHIjklm4n5o6r": {
-      "title": "Read a Book",
-      "description": "Read 'The Great Gatsby' for book club",
-      "status": "Done"
+    "-O3WOAxX-MgAwCIUMiMp": {
+      "description": "Task3",
+      "status": "Done",
+      "title": "T3"
+    },
+    "-O3WOeslp2njmmYWH2Ei": {
+      "description": "Task1 for Rakhi",
+      "status": "To Do",
+      "title": "Task1"
+    },
+    "-O3WQZh57w_zZwOqM6Nj": {
+      "description": "Task1 for Sugata",
+      "status": "To Do",
+      "title": "T1",
+      "userUID": "FicBUeh5H4ZPPWIOdnirreUPjgA2"
+    },
+    "-O3WQoWvCCxPNFByF7EE": {
+      "description": "Task 1 for Rakhi",
+      "status": "To Do",
+      "title": "T1",
+      "userUID": "1anDwdj8gzUyh6kTAiG4ikJbgdB3"
+    }
+  },
+  "users": {
+    "UID1": {
+      "email": "user1@gmail.com",
+      "nickname": "Sugata"
+    },
+    "UID2": {
+      "email": "user2@example.com",
+      "nickname": "User Two"
+    },
+    "yljH9TtIyuNZrI7UoTnLXYHliCt1": {
+      "email": "user3@botgauge.com",
+      "nickname": ""
     }
   }
 }
