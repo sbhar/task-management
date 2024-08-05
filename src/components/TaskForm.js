@@ -2,25 +2,30 @@ import React, { useState } from 'react';
 import { Button, Form, FormGroup, Label, Input, Col, Row } from 'reactstrap';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, push, set } from 'firebase/database';
-import { auth, database } from '../firebase'; // Adjust the import path as needed
 
 const TaskForm = ({ onTaskAdded }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('To Do');
 
+  const auth = getAuth();
+  const database = getDatabase();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const user = getAuth().currentUser;
+      const user = auth.currentUser;
       if (user) {
-        const token = await user.getIdToken();
-        const db = getDatabase();
-        const tasksRef = ref(db, 'tasks');
-        const newTaskRef = push(tasksRef);
-        await set(newTaskRef, { title, description, status });
+        const userId = user.uid; // Get the current user's UID
+        const newTaskRef = ref(database, 'tasks/' + push(ref(database, 'tasks')).key);
+        await set(newTaskRef, {
+          title,
+          description,
+          status,
+          userUID: userId
+        });
 
-        onTaskAdded({ id: newTaskRef.key, title, description, status });
+        onTaskAdded({ id: newTaskRef.key, title, description, status, userUID: userId });
         setTitle('');
         setDescription('');
         setStatus('To Do');

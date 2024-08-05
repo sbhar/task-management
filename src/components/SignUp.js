@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, auth } from '../firebase';
 import { Container, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
+import { getDatabase, ref, set } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const auth = getAuth();
+  const database = getDatabase();
+  const [nickname, setNickname] = useState('');
 
   const handleSignUp = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Save user data in the database
+      const userRef = ref(database, 'users/' + user.uid);
+      await set(userRef, {
+        email,
+        nickname
+      });
       alert('User created successfully');
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { auth, db } = require('./firebaseAdmin');
+const { auth, db } = require('./firebaseAdmin'); // Import Firebase auth and database
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,17 +15,18 @@ const authenticate = async (req, res, next) => {
   }
   try {
     const decodedToken = await auth.verifyIdToken(token);
-    req.user = decodedToken;
+    req.user = decodedToken; // Save user info in request object
     next();
   } catch (error) {
     res.status(401).send('Unauthorized');
   }
 };
 
-// Get all tasks
+// Fetch tasks for the authenticated user
 app.get('/tasks', authenticate, async (req, res) => {
   try {
-    const snapshot = await db.ref('tasks').once('value');
+    const userId = req.user.uid;
+    const snapshot = await db.ref(`tasks/${userId}`).once('value');
     const tasks = snapshot.val();
     res.json(tasks ? Object.keys(tasks).map(key => ({ id: key, ...tasks[key] })) : []);
   } catch (error) {
@@ -36,26 +37,28 @@ app.get('/tasks', authenticate, async (req, res) => {
 // Add a new task
 app.post('/tasks', authenticate, async (req, res) => {
   try {
-    const { title, description, status } = req.body;
-
-    // Generate a new unique key for the task
-    const newTaskRef = db.ref('tasks').push();
-
-    // Set the task data at the new key
+    const userId = req.user.uid;
+    const { title, description, status } = req.body; // Validate required fields
+    if (!title || !description || !status) {
+      return res.status(400).send('Bad Request: Missing required fields');
+    }
+    const newTaskRef = db.ref(`tasks/${userId}`).push();
     await newTaskRef.set({ title, description, status });
-
-    // Respond with the task data including the new unique key
-    res.status(200).json({ id: newTaskRef.key, title, description, status });
+    res.json({ id: newTaskRef.key, title, description, status });
   } catch (error) {
-    console.error('Error adding task:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).send(error.message);
   }
 });
 
-// Update an existing task
+// Update a task
 app.put('/tasks/:id', authenticate, async (req, res) => {
   try {
-    await db.ref(`tasks/${req.params.id}`).update(req.body);
+    const userId = req.user.uid;
+    const { title, description, status } = req.body; // Validate required fields
+    if (!title || !description || !status) {
+      return res.status(400).send('Bad Request: Missing required fields');
+    }
+    await db.ref(`tasks/${userId}/${req.params.id}`).update({ title, description, status });
     res.sendStatus(200);
   } catch (error) {
     res.status(500).send(error.message);
@@ -65,7 +68,8 @@ app.put('/tasks/:id', authenticate, async (req, res) => {
 // Delete a task
 app.delete('/tasks/:id', authenticate, async (req, res) => {
   try {
-    await db.ref(`tasks/${req.params.id}`).remove();
+    const userId = req.user.uid;
+    await db.ref(`tasks/${userId}/${req.params.id}`).remove();
     res.sendStatus(200);
   } catch (error) {
     res.status(500).send(error.message);
